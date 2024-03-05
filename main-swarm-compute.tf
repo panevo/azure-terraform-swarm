@@ -53,6 +53,9 @@ resource "azurerm_linux_virtual_machine" "manager0" {
   patch_assessment_mode      = "AutomaticByPlatform"
   patch_mode                 = "AutomaticByPlatform"
 
+  # prevent automatic reboot to prevent interruption of data streaming
+  reboot_setting = "Never"
+
   tags = local.tags
 
   admin_ssh_key {
@@ -159,6 +162,9 @@ resource "azurerm_linux_virtual_machine" "managers" {
   provision_vm_agent         = true
   patch_assessment_mode      = "AutomaticByPlatform"
   patch_mode                 = "AutomaticByPlatform"
+
+  # prevent automatic reboot to prevent interruption of data streaming
+  reboot_setting = "Never"
 
   tags = local.tags
 
@@ -273,6 +279,9 @@ resource "azurerm_linux_virtual_machine" "workers" {
   provision_vm_agent         = true
   patch_assessment_mode      = "AutomaticByPlatform"
   patch_mode                 = "AutomaticByPlatform"
+
+  # prevent automatic reboot to prevent interruption of data streaming
+  reboot_setting = "Never"
 
   tags = local.tags
 

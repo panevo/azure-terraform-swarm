@@ -48,7 +48,7 @@ write_files:
       [Unit]
       Description=Swarm Helper
       DefaultDependencies=no
-      After=multi-user.target
+      After=multi-user.target docker.service containerd.service
       [Service]
       Type=oneshot
       ExecStart=/root/swarm-helper.py
@@ -77,7 +77,7 @@ write_files:
       [Unit]
       Description=Join Swarm
       DefaultDependencies=no
-      After=multi-user.target
+      After=multi-user.target docker.service containerd.service
       [Service]
       Type=oneshot
       ExecStart=/root/join-swarm.sh
@@ -155,11 +155,19 @@ runcmd:
   - usermod -G docker ${username}
   - cp /root/daemon.json /etc/docker
   # enable docker
-  - systemctl enable docker.service
-  - systemctl enable containerd.service
+  # - systemctl enable docker.service
+  # - systemctl enable containerd.service
   # configure python
   - python3 -m pip install bottle==0.12.25
   # start the swarm helper server
   - systemctl enable swarm-helper
   - systemctl start swarm-helper
   - systemctl start swarm-join
+  # prevent docker update
+  - apt-mark hold docker-ce docker-ce-cli containerd.io
+# TODO:
+# -
+# - deploy and configure Azure Defender for Endpoint
+# - add vm extensions
+# - add load balancer
+# - review network settings
