@@ -225,5 +225,5 @@ resource "azurerm_linux_virtual_machine" "manager1" {
   }
   custom_data = data.template_cloudinit_config.manager_config.rendered
 
-  depends_on = [azurerm_storage_account.cluster_storage]
+  depends_on = [azurerm_storage_account.cluster_storage, azurerm_linux_virtual_machine.manager0]
 }
