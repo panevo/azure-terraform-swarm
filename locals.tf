@@ -20,6 +20,7 @@ locals {
 
   environment_key = substr(local.environment, 0, 4)
 
+  vm_admin_username = "vm_admin"
 
   node_manager_count = 1
   node_manager_size  = "Standard_D2s_v3"

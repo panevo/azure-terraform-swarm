@@ -12,8 +12,8 @@ write_files:
 
       def cleanup(signum, frame):
           try:
-              nodes = check_output('docker node ls --format "{{.ID}} {{.Hostname}} {{.Status}}"', shell=True).decode().strip().split('\n')
-              down_nodes = [node.split('')[1] for node in nodes if 'down' in node.lower()]
+              nodes = check_output('docker node ls', shell=True).strip()
+              down = map(lambda x: x.split()[1], filter(lambda x: 'Down' in x, nodes.split("\n")))
               for node in down_nodes:
                   check_output('docker node rm ' + node, shell=True)
           except:
@@ -70,24 +70,24 @@ write_files:
           "metrics-addr": "0.0.0.0:9323",
       }
 
-# mounts:
-#   - - //${STORAGE_ACCOUNT_NAME}.file.core.windows.net/config
-#       - /srv/config
-#       - cifs
-#       - vers=3.0,username=${STORAGE_ACCOUNT_NAME},password=${STORAGE_ACCOUNT_KEY},dir_mode=0777,file_mode=0777,uid=1000,gid=1000,noperm,,iocharset=utf8
-#     - - //${STORAGE_ACCOUNT_NAME}.file.core.windows.net/data
-#       - /srv/data
-#       - cifs
-#       - vers=3.0,username=${STORAGE_ACCOUNT_NAME},password=${STORAGE_ACCOUNT_KEY},dir_mode=0777,file_mode=0777,uid=1000,gid=1000,noperm,,iocharset=utf8
-#     - - //${STORAGE_ACCOUNT_NAME}.file.core.windows.net/protected
-#       - /srv/protected
-#       - cifs
-#       - vers=3.0,username=${STORAGE_ACCOUNT_NAME},password=${STORAGE_ACCOUNT_KEY},dir_mode=0600,file_mode=0600,uid=1000,gid=1000,noperm,,iocharset=utf8
+mounts:
+  - - //${storage_account_name}.file.core.windows.net/config
+    - /srv/config
+    - cifs
+    - vers=3.0,username=${storage_account_name},password=${storage_account_key},dir_mode=0700,file_mode=0600,uid=1000,gid=1000,noperm,,iocharset=utf8
+  - - //${storage_account_name}.file.core.windows.net/data
+    - /srv/data
+    - cifs
+    - vers=3.0,username=${storage_account_name},password=${storage_account_key},dir_mode=0700,file_mode=0600,uid=1000,gid=1000,noperm,,iocharset=utf8
+  - - //${storage_account_name}.file.core.windows.net/data
+    - /srv/protected
+    - cifs
+    - vers=3.0,username=${storage_account_name},password=${storage_account_key},dir_mode=0700,file_mode=0600,uid=1000,gid=1000,noperm,,iocharset=utf8
+
 package_update: true
 package_upgrade: true
 packages:
   - ntp
-  - docker-ce
   - tmux
   - htop
   - vim
@@ -95,7 +95,6 @@ packages:
   - curl
   - apt-transport-https
   - ca-certificates
-  - curl
   - python3-pip
 
 runcmd:
@@ -107,7 +106,7 @@ runcmd:
   - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
   - apt-get update -y
   - apt-get install -y docker-ce=5:25.0.3-1~ubuntu.22.04~jammy docker-ce-cli=5:25.0.3-1~ubuntu.22.04~jammy containerd.io docker-buildx-plugin docker-compose-plugin
-  - usermod -G docker cluster
+  - usermod -G docker ${username}
   - cp /root/daemon.json /etc/docker
   # enable docker
   - systemctl enable docker
