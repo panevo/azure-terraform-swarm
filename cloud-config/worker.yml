@@ -91,6 +91,9 @@ runcmd:
   - apt-get install -y docker-ce=5:25.0.3-1~ubuntu.22.04~jammy docker-ce-cli=5:25.0.3-1~ubuntu.22.04~jammy containerd.io docker-buildx-plugin docker-compose-plugin
   - usermod -G docker ${username}
   - cp /root/daemon.json /etc/docker
+  # create the data folders on the datadisk
+  - mkdir -p /datadisk/faust /datadisk/prometheus /datadisk/grafana
+  - chown -R ${username}:${username} /datadisk/faust /datadisk/prometheus /datadisk/grafana
   # enable docker and join cluster
   - systemctl enable docker
   - systemctl enable swarm-join

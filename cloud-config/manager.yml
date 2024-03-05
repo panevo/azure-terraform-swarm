@@ -99,7 +99,20 @@ write_files:
           "metrics-addr": "0.0.0.0:9323",
       }
 
+# setup the datadisk
+disk_setup:
+  /dev/disk/azure/scsi1/lun0:
+    table_type: gpt
+    layout: true
+    overwrite: false
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun0
+    partition: 1
+    filesystem: ext4
+
 mounts:
+  # Mount the Azure File Share to /srv/
   - - //${storage_account_name}.file.core.windows.net/config
     - /srv/config
     - cifs
@@ -112,7 +125,13 @@ mounts:
     - /srv/protected
     - cifs
     - vers=3.0,username=${storage_account_name},password=${storage_account_key},dir_mode=0700,file_mode=0600,uid=1000,gid=1000,noperm,,iocharset=utf8
-
+  # mount the datadisk to /data
+  - [
+      "/dev/disk/azure/scsi1/lun0-part1",
+      "/datadisk",
+      auto,
+      "defaults,noexec,nofail",
+    ]
 package_update: true
 package_upgrade: true
 packages:
