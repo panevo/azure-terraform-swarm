@@ -95,9 +95,9 @@ runcmd:
   - mkdir -p /datadisk/faust /datadisk/prometheus /datadisk/grafana
   - chown -R ${username}:${username} /datadisk/faust /datadisk/prometheus /datadisk/grafana
   # enable docker and join cluster
-  - systemctl enable docker
+  - systemctl enable docker.service
+  - systemctl enable containerd.service
   - systemctl enable swarm-join
   - systemctl enable swarm-leave
-  - systemctl start docker
   - systemctl start swarm-leave
   - systemctl start swarm-join

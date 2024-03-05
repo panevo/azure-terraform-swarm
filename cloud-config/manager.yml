@@ -155,8 +155,8 @@ runcmd:
   - usermod -G docker ${username}
   - cp /root/daemon.json /etc/docker
   # enable docker
-  - systemctl enable docker
-  - systemctl start docker
+  - systemctl enable docker.service
+  - systemctl enable containerd.service
   # configure python
   - python3 -m pip install bottle==0.12.25
   # start the swarm helper server
