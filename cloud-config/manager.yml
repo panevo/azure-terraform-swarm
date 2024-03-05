@@ -54,6 +54,35 @@ write_files:
       ExecStart=/root/swarm-helper.py
       [Install]
       WantedBy=multi-user.target
+  - path: /root/join-swarm.sh
+    permissions: 0755
+    content: |
+      #!/bin/bash
+      if [ $(hostname) != "manager0" ]; then
+        # get the swarm manager token
+        TOKEN=$(wget -nv -q -O - --retry-connrefused --waitretry 5 http://manager0:1337/join/manager)
+        docker swarm join --token $TOKEN manager0:2377
+      fi
+  - path: /root/leave-swarm.sh
+    permissions: 0755
+    content: |
+      #!/bin/bash
+      HOSTNAME=`hostname`
+      # signal the master to drain services from our node
+      wget -nv -q -O - --retry-connrefused 20 --waitretry 5 http://manager0:1337/drain/$HOSTNAME
+      docker swarm leave
+  - path: /etc/systemd/system/swarm-join.service
+    permissions: 0444
+    content: |
+      [Unit]
+      Description=Join Swarm
+      DefaultDependencies=no
+      After=multi-user.target
+      [Service]
+      Type=oneshot
+      ExecStart=/root/join-swarm.sh
+      [Install]
+      WantedBy=multi-user.target
   - path: /etc/waagent.conf
     permissions: 0444
     content: |
@@ -98,11 +127,9 @@ packages:
   - python3-pip
 
 runcmd:
-  #- mkdir -p /srv/data /srv/config /srv/protected
-  #- mount -a
   # Follow install instructions for Docker
-  - chmod a+r /etc/apt/keyrings/docker.asc
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
   - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
   - apt-get update -y
   - apt-get install -y docker-ce=5:25.0.3-1~ubuntu.22.04~jammy docker-ce-cli=5:25.0.3-1~ubuntu.22.04~jammy containerd.io docker-buildx-plugin docker-compose-plugin
@@ -116,4 +143,4 @@ runcmd:
   # start the swarm helper server
   - systemctl enable swarm-helper
   - systemctl start swarm-helper
-  #- reboot
+  - systemctl start swarm-join
