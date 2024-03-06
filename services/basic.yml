@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  whoami:
+    image: "traefik/whoami"
+    container_name: "simple-service"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`azure-swarm-test-tt.canadacentral.cloudapp.azure.com`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
+    networks:
+      - proxy
+    ports:
+      - 80:80
+      - 443:443
+    deploy:
+      mode: global
+
+networks:
+  proxy:
+    driver: overlay
+    name: proxy
