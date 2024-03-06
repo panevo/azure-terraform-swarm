@@ -62,20 +62,6 @@ resource "azurerm_network_security_group" "manager_sg" {
   location            = azurerm_resource_group.swarm_cluster.location
 
   tags = local.tags
-
-  # Just for testing
-  security_rule {
-    name                       = "http"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
 }
 
 # Network security rules for workers
@@ -85,18 +71,4 @@ resource "azurerm_network_security_group" "worker_sg" {
   location            = azurerm_resource_group.swarm_cluster.location
 
   tags = local.tags
-
-  # # Just for testing
-  # security_rule {
-  #   name                       = "http"
-  #   priority                   = 100
-  #   direction                  = "Inbound"
-  #   access                     = "Allow"
-  #   protocol                   = "Tcp"
-  #   source_port_range          = "*"
-  #   destination_port_range     = "*"
-  #   source_address_prefix      = "*"
-  #   destination_address_prefix = "*"
-  # }
-
 }

@@ -27,12 +27,13 @@ resource "azurerm_storage_account" "cluster_storage" {
     }
   }
 
+  public_network_access_enabled = false
+
   network_rules {
-    default_action = "Allow"
-    # private_link_access {
-    #   endpoint_resource_id = "/subscriptions/${var.subscription_id}/providers/Microsoft.Security/datascanners/StorageDataScanner"
-    #   endpoint_tenant_id   = var.tenant_id
-    # }
+    default_action = "Deny"
+    virtual_network_subnet_ids = [
+      azurerm_subnet.node_subnet.id
+    ]
   }
 
   # meta tags
