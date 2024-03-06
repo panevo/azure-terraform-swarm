@@ -28,7 +28,7 @@ resource "azurerm_network_interface" "nic_manager0" {
   ip_configuration {
     name                          = "ipconfig1"
     subnet_id                     = azurerm_subnet.node_subnet.id
-    private_ip_address_allocation = "Static"
+    private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.publicip_manager0.id
     primary                       = true
   }
@@ -114,19 +114,19 @@ resource "azurerm_virtual_machine_data_disk_attachment" "manager0_data_attachmen
 # ------------------------------------------------------------------
 # VM extensions
 # ------------------------------------------------------------------
-resource "azurerm_virtual_machine_extension" "vm_config_linux_manager0" {
-  name                       = "ConfigurationforLinux"
-  virtual_machine_id         = azurerm_linux_virtual_machine.manager0.id
-  publisher                  = "Microsoft.GuestConfiguration"
-  type                       = "ConfigurationforLinux"
-  type_handler_version       = "1.26"
-  auto_upgrade_minor_version = true
-  # "We strongly recommended to always update to the latest version, or opt in to the Automatic Extension Update feature."
-  # https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-extension-versions
-  # We assume that this recommendation is for all extensions, not just the Azure Monitor Agent extension.
-  automatic_upgrade_enabled = true
-  tags                      = local.tags
-}
+# resource "azurerm_virtual_machine_extension" "vm_config_linux_manager0" {
+#   name                       = "ConfigurationforLinux"
+#   virtual_machine_id         = azurerm_linux_virtual_machine.manager0.id
+#   publisher                  = "Microsoft.GuestConfiguration"
+#   type                       = "ConfigurationforLinux"
+#   type_handler_version       = "1.26"
+#   auto_upgrade_minor_version = true
+#   # "We strongly recommended to always update to the latest version, or opt in to the Automatic Extension Update feature."
+#   # https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-extension-versions
+#   # We assume that this recommendation is for all extensions, not just the Azure Monitor Agent extension.
+#   automatic_upgrade_enabled = true
+#   tags                      = local.tags
+# }
 
 # resource "azurerm_virtual_machine_extension" "vm_dep_agent_linux_manager0" {
 #   name                       = "DependencyAgentLinux"
@@ -186,7 +186,7 @@ resource "azurerm_network_interface" "nic_managers" {
   ip_configuration {
     name                          = "ipconfig1"
     subnet_id                     = azurerm_subnet.node_subnet.id
-    private_ip_address_allocation = "Static"
+    private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.publicip_managers[count.index].id
     primary                       = true
   }
@@ -346,13 +346,13 @@ resource "azurerm_network_interface" "nic_workers" {
   # ip_configuration {
   #   name                          = "internal"
   #   subnet_id                     = azurerm_subnet.node_subnet.id
-  #   private_ip_address_allocation = "Static"
+  #   private_ip_address_allocation = "Dynamic"
   # }
 
   ip_configuration {
     name                          = "ipconfig1"
     subnet_id                     = azurerm_subnet.node_subnet.id
-    private_ip_address_allocation = "Static"
+    private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.publicip_workers[count.index].id
     primary                       = true
   }
