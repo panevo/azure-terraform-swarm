@@ -11,7 +11,7 @@ resource "azurerm_public_ip" "publicip_manager0" {
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
   sku                 = "Standard"
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
   domain_name_label   = "${local.product_key}-${local.environment_key}-manager0-${local.location_key}${var.name_postfix}"
   tags                = local.tags
 
@@ -28,7 +28,7 @@ resource "azurerm_network_interface" "nic_manager0" {
   ip_configuration {
     name                          = "ipconfig1"
     subnet_id                     = azurerm_subnet.node_subnet.id
-    private_ip_address_allocation = "Dynamic"
+    private_ip_address_allocation = "Static"
     public_ip_address_id          = azurerm_public_ip.publicip_manager0.id
     primary                       = true
   }
@@ -169,7 +169,7 @@ resource "azurerm_public_ip" "publicip_managers" {
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
   sku                 = "Standard"
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
   domain_name_label   = "${local.product_key}-${local.environment_key}-manager${count.index + 1}-${local.location_key}${var.name_postfix}"
   tags                = local.tags
 }
@@ -186,7 +186,7 @@ resource "azurerm_network_interface" "nic_managers" {
   ip_configuration {
     name                          = "ipconfig1"
     subnet_id                     = azurerm_subnet.node_subnet.id
-    private_ip_address_allocation = "Dynamic"
+    private_ip_address_allocation = "Static"
     public_ip_address_id          = azurerm_public_ip.publicip_managers[count.index].id
     primary                       = true
   }
@@ -330,7 +330,7 @@ resource "azurerm_public_ip" "publicip_workers" {
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
   sku                 = "Standard"
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
   domain_name_label   = "${local.product_key}-${local.environment_key}-worker${count.index}-${local.location_key}${var.name_postfix}"
   tags                = local.tags
 }
@@ -346,13 +346,13 @@ resource "azurerm_network_interface" "nic_workers" {
   # ip_configuration {
   #   name                          = "internal"
   #   subnet_id                     = azurerm_subnet.node_subnet.id
-  #   private_ip_address_allocation = "Dynamic"
+  #   private_ip_address_allocation = "Static"
   # }
 
   ip_configuration {
     name                          = "ipconfig1"
     subnet_id                     = azurerm_subnet.node_subnet.id
-    private_ip_address_allocation = "Dynamic"
+    private_ip_address_allocation = "Static"
     public_ip_address_id          = azurerm_public_ip.publicip_workers[count.index].id
     primary                       = true
   }
