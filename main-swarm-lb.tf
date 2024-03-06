@@ -55,6 +55,8 @@ resource "azurerm_lb_rule" "lb_rule_http" {
 
   probe_id        = azurerm_lb_probe.lb_probe_proxy.id
   loadbalancer_id = azurerm_lb.swarm_lb.id
+
+  backend_address_pool_ids = [azurerm_lb_backend_address_pool.swarm_lb_backend_address_pool.id]
 }
 
 resource "azurerm_lb_rule" "lb_rule_https" {
@@ -66,6 +68,8 @@ resource "azurerm_lb_rule" "lb_rule_https" {
 
   probe_id        = azurerm_lb_probe.lb_probe_proxy.id
   loadbalancer_id = azurerm_lb.swarm_lb.id
+
+  backend_address_pool_ids = [azurerm_lb_backend_address_pool.swarm_lb_backend_address_pool.id]
 }
 
 
@@ -87,4 +91,24 @@ resource "azurerm_network_interface_backend_address_pool_association" "swarm_nic
   network_interface_id    = azurerm_network_interface.nic_workers[count.index].id
   ip_configuration_name   = azurerm_network_interface.nic_workers[count.index].ip_configuration[0].name
   backend_address_pool_id = azurerm_lb_backend_address_pool.swarm_lb_backend_address_pool.id
+}
+
+# Azure LB Inbound NAT Rule
+resource "azurerm_lb_nat_rule" "lb_inbound_nat_rule_worker_22" {
+  count                          = local.node_worker_count
+  name                           = "ssh-500${count.index}-vm-22"
+  protocol                       = "Tcp"
+  frontend_port                  = 5000 + count.index
+  backend_port                   = 22
+  frontend_ip_configuration_name = azurerm_lb.swarm_lb.frontend_ip_configuration[0].name
+  resource_group_name            = azurerm_resource_group.swarm_cluster.name
+  loadbalancer_id                = azurerm_lb.swarm_lb.id
+}
+
+# Associate LB NAT Rule and VM Network Interface
+resource "azurerm_network_interface_nat_rule_association" "nic_nat_rule_associate" {
+  count                 = local.node_worker_count
+  network_interface_id  = azurerm_network_interface.nic_workers[count.index].id
+  ip_configuration_name = azurerm_network_interface.nic_workers[count.index].ip_configuration[0].name
+  nat_rule_id           = azurerm_lb_nat_rule.lb_inbound_nat_rule_worker_22[count.index].id
 }
