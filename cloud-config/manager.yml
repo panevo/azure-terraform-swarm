@@ -34,6 +34,13 @@ write_files:
           except:
               abort(404, "node not found")
 
+      @get("/activate/<hostname>")
+      def activate(hostname):
+          try:
+              return check_output('docker node update --availability active ' + hostname, shell=True).strip()
+          except:
+              abort(404, "node not found")
+
       if 'manager0' in gethostname():
           try:
               check_output('docker swarm init', shell=True)
@@ -96,7 +103,70 @@ write_files:
     permissions: 0444
     content: |
       {
-          "metrics-addr": "0.0.0.0:9323",
+          "metrics-addr": "0.0.0.0:9323"
+      }
+  - path: /etc/opt/microsoft/mdatp/managed/mdatp_managed.json
+    permissions: 0444
+    content: |
+      {
+          "antivirusEngine": {
+              "enforcementLevel": "real_time",
+              "scanAfterDefinitionUpdate": true,
+              "scanArchives": true,
+              "maximumOnDemandScanThreads": 1,
+              "exclusionsMergePolicy": "merge",
+              "exclusions": [
+                  {
+                      "$type": "excludedPath",
+                      "isDirectory": false,
+                      "path": "/var/log/system.log"
+                  },
+                  {
+                      "$type": "excludedPath",
+                      "isDirectory": true,
+                      "path": "/proc"
+                  },
+                  {
+                      "$type": "excludedPath",
+                      "isDirectory": true,
+                      "path": "/sys"
+                  },
+                  {
+                      "$type": "excludedPath",
+                      "isDirectory": true,
+                      "path": "/dev"
+                  },
+                  {
+                      "$type": "excludedFileExtension",
+                      "extension": ""
+                  },
+                  {
+                      "$type": "excludedFileName",
+                      "name": ""
+                  }
+              ],
+              "disallowedThreatActions": [
+                  "allow",
+                  "restore"
+              ],
+              "threatTypeSettingsMergePolicy": "merge",
+              "threatTypeSettings": [
+                  {
+                      "key": "potentially_unwanted_application",
+                      "value": "audit"
+                  },
+                  {
+                      "key": "archive_bomb",
+                      "value": "audit"
+                  }
+              ]
+          },
+          "cloudService": {
+              "enabled": true,
+              "diagnosticLevel": "optional",
+              "automaticSampleSubmissionConsent": "safe",
+              "automaticDefinitionUpdateEnabled": true
+          }
       }
 
 # setup the datadisk
@@ -154,6 +224,8 @@ runcmd:
   - apt-get install -y docker-ce=5:25.0.3-1~ubuntu.22.04~jammy docker-ce-cli=5:25.0.3-1~ubuntu.22.04~jammy containerd.io docker-buildx-plugin docker-compose-plugin
   - usermod -G docker ${username}
   - cp /root/daemon.json /etc/docker
+  # prevent docker update
+  - apt-mark hold docker-ce docker-ce-cli containerd.io
   # enable docker
   # - systemctl enable docker.service
   # - systemctl enable containerd.service
@@ -162,12 +234,15 @@ runcmd:
   # start the swarm helper server
   - systemctl enable swarm-helper
   - systemctl start swarm-helper
+  - systemctl enable swarm-join
   - systemctl start swarm-join
-  # prevent docker update
-  - apt-mark hold docker-ce docker-ce-cli containerd.io
-# TODO:
-# -
-# - deploy and configure Azure Defender for Endpoint
-# - add vm extensions
-# - add load balancer
-# - review network settings
+  # deploy and configure Azure Defender for Endpoint
+  # - curl https://raw.githubusercontent.com/microsoft/mdatp-xplat/master/linux/installation/mde_installer.sh > https://raw.githubusercontent.com/microsoft/mdatp-xplat/master/linux/installation/mde_installer.sh
+  # - chmod +x /root/mde_installer.sh
+  # - /root/mde_installer.sh
+  # # Configure daily quick scan at 8 am UTC
+  # - (crontab -l 2>/dev/null; echo '0 8 * * * mdatp scan quick') | crontab -
+  # # Configure weekly full scan at 6 am UTC on Sunday
+  # - (crontab -l 2>/dev/null; echo '0 6 * * 0 mdatp scan quick') | crontab -
+  # # Configure monthly updates of Azure Defender for Endpoint
+  # - (crontab -l 2>/dev/null; echo '0 0 1 * * apt-get install --only-upgrade mdatp') | crontab -

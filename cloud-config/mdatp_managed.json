@@ -1,0 +1,60 @@
+{
+    "antivirusEngine": {
+        "enforcementLevel": "real_time",
+        "scanAfterDefinitionUpdate": true,
+        "scanArchives": true,
+        "maximumOnDemandScanThreads": 1,
+        "exclusionsMergePolicy": "merge",
+        "exclusions": [
+            {
+                "$type": "excludedPath",
+                "isDirectory": false,
+                "path": "/var/log/system.log"
+            },
+            {
+                "$type": "excludedPath",
+                "isDirectory": true,
+                "path": "/proc"
+            },
+            {
+                "$type": "excludedPath",
+                "isDirectory": true,
+                "path": "/sys"
+            },
+            {
+                "$type": "excludedPath",
+                "isDirectory": true,
+                "path": "/dev"
+            },
+            {
+                "$type": "excludedFileExtension",
+                "extension": ""
+            },
+            {
+                "$type": "excludedFileName",
+                "name": ""
+            }
+        ],
+        "disallowedThreatActions": [
+            "allow",
+            "restore"
+        ],
+        "threatTypeSettingsMergePolicy": "merge",
+        "threatTypeSettings": [
+            {
+                "key": "potentially_unwanted_application",
+                "value": "audit"
+            },
+            {
+                "key": "archive_bomb",
+                "value": "audit"
+            }
+        ]
+    },
+    "cloudService": {
+        "enabled": true,
+        "diagnosticLevel": "optional",
+        "automaticSampleSubmissionConsent": "safe",
+        "automaticDefinitionUpdateEnabled": true
+    }
+}

@@ -10,6 +10,9 @@ write_files:
       # get the swarm worker token
       TOKEN=$(wget -nv -q -O - --retry-connrefused --tries 0 --waitretry 5 http://manager0:1337/join/worker)
       docker swarm join --token $TOKEN manager0:2377
+      # let the manager know that we're ready to accept services
+      HOSTNAME=`hostname`
+      wget -nv -q -O - --retry-connrefused --tries 0 --waitretry 5 http://manager0:1337/activate/$HOSTNAME
   - path: /root/leave-swarm.sh
     permissions: 0755
     content: |
@@ -55,7 +58,70 @@ write_files:
     permissions: 0444
     content: |
       {
-          "metrics-addr": "0.0.0.0:9323",
+          "metrics-addr": "0.0.0.0:9323"
+      }
+  - path: /etc/opt/microsoft/mdatp/managed/mdatp_managed.json
+    permissions: 0444
+    content: |
+      {
+          "antivirusEngine": {
+              "enforcementLevel": "real_time",
+              "scanAfterDefinitionUpdate": true,
+              "scanArchives": true,
+              "maximumOnDemandScanThreads": 1,
+              "exclusionsMergePolicy": "merge",
+              "exclusions": [
+                  {
+                      "$type": "excludedPath",
+                      "isDirectory": false,
+                      "path": "/var/log/system.log"
+                  },
+                  {
+                      "$type": "excludedPath",
+                      "isDirectory": true,
+                      "path": "/proc"
+                  },
+                  {
+                      "$type": "excludedPath",
+                      "isDirectory": true,
+                      "path": "/sys"
+                  },
+                  {
+                      "$type": "excludedPath",
+                      "isDirectory": true,
+                      "path": "/dev"
+                  },
+                  {
+                      "$type": "excludedFileExtension",
+                      "extension": ""
+                  },
+                  {
+                      "$type": "excludedFileName",
+                      "name": ""
+                  }
+              ],
+              "disallowedThreatActions": [
+                  "allow",
+                  "restore"
+              ],
+              "threatTypeSettingsMergePolicy": "merge",
+              "threatTypeSettings": [
+                  {
+                      "key": "potentially_unwanted_application",
+                      "value": "audit"
+                  },
+                  {
+                      "key": "archive_bomb",
+                      "value": "audit"
+                  }
+              ]
+          },
+          "cloudService": {
+              "enabled": true,
+              "diagnosticLevel": "optional",
+              "automaticSampleSubmissionConsent": "safe",
+              "automaticDefinitionUpdateEnabled": true
+          }
       }
 
 mounts:
@@ -91,6 +157,8 @@ runcmd:
   - apt-get install -y docker-ce=5:25.0.3-1~ubuntu.22.04~jammy docker-ce-cli=5:25.0.3-1~ubuntu.22.04~jammy containerd.io docker-buildx-plugin docker-compose-plugin
   - usermod -G docker ${username}
   - cp /root/daemon.json /etc/docker
+    # prevent docker update
+  - apt-mark hold docker-ce docker-ce-cli containerd.io
   # create the data folders on the datadisk
   - mkdir -p /datadisk/faust /datadisk/prometheus /datadisk/grafana
   - chown -R ${username}:${username} /datadisk/faust /datadisk/prometheus /datadisk/grafana
