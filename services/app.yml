@@ -50,6 +50,7 @@ services:
       - --providers.docker.network=proxy
       - --providers.docker.watch
       - --providers.docker.exposedbydefault=false
+      - --api
       # General HTTP endpoint
       - --entryPoints.web.address=:80
       # Enable Ping healthcheck
@@ -91,14 +92,31 @@ services:
         traefik.http.routers.api.rule: Host(`traefik2.iotorq-lean.com`)
         traefik.http.routers.api.entryPoints: web
         traefik.http.routers.api.service: api@internal
+        traefik.http.services.dummy.loadbalancer.server.port: 4242
 
   whoami:
     image: "traefik/whoami"
-    container_name: "simple-service"
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`lean-prod-swarm-lb-cancen.canadacentral.cloudapp.azure.com`)"
-      - "traefik.http.routers.whoami.entrypoints=web"
+      traefik.enable: "true"
+      traefik.http.routers.whoami.rule: HostRegexp(`api2.iotorq-lean.com`, `{subdomain:[a-zA-Z0-9]+}.iotorq-lean.com`)
+      traefik.http.routers.whoami.entrypoints: web
+      traefik.http.services.whoami.loadbalancer.server.port: 80
+    networks:
+      - proxy
+
+  visualizer:
+    image: dockersamples/visualizer
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      labels:
+        traefik.enable: "true"
+        traefik.http.routers.viz.rule: Host(`viz2.iotorq-lean.com`)
+        traefik.http.routers.viz.entryPoints: web
+        traefik.http.services.viz.loadbalancer.server.port: 8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - proxy
 
