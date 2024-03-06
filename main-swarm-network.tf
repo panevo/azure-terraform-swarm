@@ -23,6 +23,7 @@ resource "azurerm_subnet" "node_subnet" {
   virtual_network_name = azurerm_virtual_network.swarm_cluster_vnet.name
   address_prefixes     = ["10.254.2.0/24"] # /24 == 251 + 5 Azure reserved addresses
 
+  service_endpoints = ["Microsoft.Storage"]
   #   lifecycle {
   #     prevent_destroy = true
   #   }
