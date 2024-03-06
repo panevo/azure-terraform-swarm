@@ -186,11 +186,11 @@ mounts:
   - - //${storage_account_name}.file.core.windows.net/config
     - /srv/config
     - cifs
-    - vers=3.0,username=${storage_account_name},password=${storage_account_key},dir_mode=0700,file_mode=0600,uid=1000,gid=1000,noperm,,iocharset=utf8
+    - vers=3.0,username=${storage_account_name},password=${storage_account_key},dir_mode=0777,file_mode=0777,uid=1000,gid=1000,noperm,,iocharset=utf8
   - - //${storage_account_name}.file.core.windows.net/data
     - /srv/data
     - cifs
-    - vers=3.0,username=${storage_account_name},password=${storage_account_key},dir_mode=0700,file_mode=0600,uid=1000,gid=1000,noperm,,iocharset=utf8
+    - vers=3.0,username=${storage_account_name},password=${storage_account_key},dir_mode=0777,file_mode=0777,uid=1000,gid=1000,noperm,,iocharset=utf8
   - - //${storage_account_name}.file.core.windows.net/data
     - /srv/protected
     - cifs
