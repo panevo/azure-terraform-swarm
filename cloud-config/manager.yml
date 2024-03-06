@@ -77,7 +77,7 @@ write_files:
       HOSTNAME=`hostname`
       # signal the master to drain services from our node
       wget -nv -q -O - --retry-connrefused 20 --waitretry 5 http://manager0:1337/drain/$HOSTNAME
-      docker swarm leave
+      # docker swarm leave
   - path: /etc/systemd/system/swarm-join.service
     permissions: 0444
     content: |

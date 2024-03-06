@@ -6,7 +6,7 @@ write_files:
     content: |
       #!/bin/bash
       # make sure there's no disk state that points to an existing swarm
-      docker swarm leave
+      # docker swarm leave
       # get the swarm worker token
       TOKEN=$(wget -nv -q -O - --retry-connrefused --tries 0 --waitretry 5 http://manager0:1337/join/worker)
       docker swarm join --token $TOKEN manager0:2377

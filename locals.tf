@@ -22,7 +22,7 @@ locals {
 
   vm_admin_username = "vm_admin"
 
-  node_manager_count = 3
+  node_manager_count = 1
   node_manager_size  = "Standard_D2s_v3"
   node_worker_count  = 1
   node_worker_size   = "Standard_D2s_v3"
