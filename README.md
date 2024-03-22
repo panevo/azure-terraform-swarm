@@ -4,6 +4,30 @@
 
 This repository contains Terraform code to deploy a cluster of virtual machines in Microsoft Azure with Docker Swarm fully configured. The machines are automatically provisioned using cloud-init. Each machine gets its own data disk, and file sharing is provided by mounting an Azure Storage File Share. The number of manager and worker nodes is configurable, and a basic Python server is started on the first manager node to share the Swarm join token with other nodes.
 
+This is a modern take of the approach proposed by Rui Carmo at: <https://github.com/rcarmo/azure-docker-swarm-cluster>
+
+## Architecture
+
+The Terraform configuration deploys the following resources in Azure:
+
+- A resource group to contain all resources.
+- A virtual network with a subnet for the all the virtual machines.
+- A configurable number of virtual machines for the Docker Swarm cluster:
+  - Manager nodes with a public IP address and a data disk.
+  - Worker nodes with a data disk.
+- Two network security groups with rules, one for the manager nodes and one for the worker nodes.
+- A storage account with a file share, mounted on all the VMs.
+- A load balancer to forward traffic to the virtual machines.
+
+The Terraform configuration uses cloud-init to configure the virtual machines with Docker and Docker Swarm. The first manager node starts a Python server to share the join token with other nodes. The join token is retrieved by the other nodes using a simple HTTP request.
+
+## Limitations
+
+- In production, you may want to consider the use of an Azure Load Balancer to provide TLS termination
+- The join token is shared in plain text over HTTP. In production, you should use a secure method to share the token.
+- The configuration does not include monitoring, logging, or backup solutions. You should consider adding these services to your deployment.
+- The load balancer is configured to forward traffic to any node in the cluster. On a larger cluster, you may want to configure the load balancer to forward traffic to worker nodes only. On a small cluster (<= 5 machines), you are likely to only have manager nodes so this cannot be avoided.
+
 ## Prerequisites
 
 Before using this Terraform configuration, ensure you have the following prerequisites:
@@ -12,6 +36,10 @@ Before using this Terraform configuration, ensure you have the following prerequ
 2. Terraform installed on your local machine. You can download it from [Terraform's official website](https://www.terraform.io/downloads.html).
 3. Azure CLI installed for authentication and managing Azure resources. You can install it from [Azure CLI Installation Guide](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
 
+Note that in production, you should configure a remote storage backend for Terraform state files to ensure consistency and collaboration among team members, as described in the [Azure documentation](https://learn.microsoft.com/en-us/azure/developer/terraform/store-state-in-azure-storage?tabs=azure-cli).
+
+For simplicity, this guide also connects to Azure using the Azure CLI. You can also use a service principal or managed identity for authentication.
+
 ## Usage
 
 Follow these steps to deploy the Azure cluster with Docker Swarm:
@@ -19,30 +47,38 @@ Follow these steps to deploy the Azure cluster with Docker Swarm:
 1. Clone this repository to your local machine.
 
 ```bash
-git clone https://github.com/yourusername/terraform-azure-docker-swarm.git
+git clone https://github.com/panevo/azure-terraform-swarm.git
 cd terraform-azure-docker-swarm
 ```
 
-2. Initialize Terraform in the project directory.
+2. Generate a SSH key pair to use for accessing the VMs in the cluster.
 
 ```bash
-terraform init
+make keys
 ```
 
-3. Modify the `variables.tf` file to configure your Azure settings and cluster parameters. You can specify the number of manager and worker nodes, Azure region, resource group name, VM sizes, etc.
-
-4. Review and customize the cloud-init configuration files (`cloud-init/manager-init.yaml` and `cloud-init/worker-init.yaml`) according to your requirements. These files contain the configuration that will be applied to the VMs during provisioning.
-
-5. Execute Terraform plan to preview the changes that will be applied.
+3. Log in to Azure using the Azure CLI.
 
 ```bash
-terraform plan
+az login
 ```
 
-6. If the plan looks good, apply the Terraform configuration to create the Azure resources.
+3. Initialize Terraform in the project directory.
 
 ```bash
-terraform apply
+make init
+```
+
+4. Execute Terraform plan to preview the changes that will be applied.
+
+```bash
+make plan
+```
+
+5. If the plan looks good, apply the Terraform configuration to create the Azure resources.
+
+```bash
+make apply
 ```
 
 7. Once the deployment is complete, Terraform will output the public IP address of the first manager node and the join token for Docker Swarm. Use this information to access and manage your Docker Swarm cluster.
@@ -63,12 +99,6 @@ ssh username@public_ip_address
 docker node ls           # List all nodes in the Swarm
 docker service ls        # List all services running in the Swarm
 docker stack deploy ...  # Deploy a new stack to the Swarm
-```
-
-3. Use the Swarm join token provided by Terraform to join worker nodes to the cluster.
-
-```bash
-docker swarm join --token <token> manager_ip:2377
 ```
 
 ## Cleaning Up
@@ -103,11 +133,6 @@ If you encounter any issues during deployment or usage, refer to the following r
 
 For specific issues or questions related to this repository, feel free to open an issue or contact the repository owner.
 
-## Contributors
-
-- John Doe (@johndoe)
-- Jane Smith (@janesmith)
-
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License

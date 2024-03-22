@@ -1,12 +1,12 @@
 resource "azurerm_resource_group" "swarm_cluster" {
-  name     = "${local.product_key}-${local.environment_key}-${local.location_key}-swarm-rg"
+  name     = "${var.product_key}-${var.environment_key}-${local.location_key}-swarm-rg"
   location = local.location
   tags     = local.tags
 }
 
 
 resource "azurerm_virtual_network" "swarm_cluster_vnet" {
-  name                = "${local.product_key}-${local.environment_key}-vnet-${local.location_key}${var.name_postfix}"
+  name                = "${var.product_key}-${var.environment_key}-vnet-${local.location_key}${var.name_postfix}"
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
   address_space       = ["10.254.0.0/16"] # /16 == 65,536 addresses
@@ -18,7 +18,7 @@ resource "azurerm_virtual_network" "swarm_cluster_vnet" {
 }
 
 resource "azurerm_subnet" "node_subnet" {
-  name                 = "${local.product_key}-${local.environment_key}-subnet-backend-${local.location_key}${var.name_postfix}"
+  name                 = "${var.product_key}-${var.environment_key}-subnet-backend-${local.location_key}${var.name_postfix}"
   resource_group_name  = azurerm_resource_group.swarm_cluster.name
   virtual_network_name = azurerm_virtual_network.swarm_cluster_vnet.name
   address_prefixes     = ["10.254.2.0/24"] # /24 == 251 + 5 Azure reserved addresses
@@ -30,7 +30,7 @@ resource "azurerm_subnet" "node_subnet" {
 }
 
 resource "azurerm_availability_set" "vm_availabilityset_manager" {
-  name                         = "${local.product_key}-${local.environment_key}-availabilityset-${local.location_key}${var.name_postfix}"
+  name                         = "${var.product_key}-${var.environment_key}-availabilityset-${local.location_key}${var.name_postfix}"
   resource_group_name          = azurerm_resource_group.swarm_cluster.name
   location                     = azurerm_resource_group.swarm_cluster.location
   tags                         = local.tags
@@ -44,7 +44,7 @@ resource "azurerm_availability_set" "vm_availabilityset_manager" {
 
 
 resource "azurerm_availability_set" "vm_availabilityset_workers" {
-  name                         = "${local.product_key}-${local.environment_key}-availabilityset-worker-${local.location_key}${var.name_postfix}"
+  name                         = "${var.product_key}-${var.environment_key}-availabilityset-worker-${local.location_key}${var.name_postfix}"
   resource_group_name          = azurerm_resource_group.swarm_cluster.name
   location                     = azurerm_resource_group.swarm_cluster.location
   tags                         = local.tags
@@ -58,7 +58,7 @@ resource "azurerm_availability_set" "vm_availabilityset_workers" {
 
 # Network security rules for managers
 resource "azurerm_network_security_group" "manager_sg" {
-  name                = "${local.product_key}-${local.environment_key}-nic-sg-managers-${local.location_key}${var.name_postfix}"
+  name                = "${var.product_key}-${var.environment_key}-nic-sg-managers-${local.location_key}${var.name_postfix}"
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
 
@@ -67,7 +67,7 @@ resource "azurerm_network_security_group" "manager_sg" {
 
 # Network security rules for workers
 resource "azurerm_network_security_group" "worker_sg" {
-  name                = "${local.product_key}-${local.environment_key}-nic-sg-workers-${local.location_key}${var.name_postfix}"
+  name                = "${var.product_key}-${var.environment_key}-nic-sg-workers-${local.location_key}${var.name_postfix}"
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
 

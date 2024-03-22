@@ -5,7 +5,7 @@ resource "random_id" "storage_id" {
 }
 
 resource "azurerm_storage_account" "cluster_storage" {
-  name                              = "${local.product_key}cluster${lower(random_id.storage_id.hex)}"
+  name                              = "${var.product_key}cluster${lower(random_id.storage_id.hex)}"
   resource_group_name               = azurerm_resource_group.swarm_cluster.name
   location                          = azurerm_resource_group.swarm_cluster.location
   account_tier                      = "Standard"

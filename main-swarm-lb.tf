@@ -1,6 +1,6 @@
 # Resource-1: Create Public IP Address for Azure Load Balancer
 resource "azurerm_public_ip" "publicip_swarm_lb" {
-  name                = "${local.product_key}-${local.environment_key}-publicip-swarm-lb-${local.location_key}${var.name_postfix}"
+  name                = "${var.product_key}-${var.environment_key}-publicip-swarm-lb-${local.location_key}${var.name_postfix}"
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
   allocation_method   = "Static"
@@ -10,7 +10,7 @@ resource "azurerm_public_ip" "publicip_swarm_lb" {
 
 # Create Azure Standard Load Balancer
 resource "azurerm_lb" "swarm_lb" {
-  name                = "${local.product_key}-${local.environment_key}-web-lb-${local.location_key}${var.name_postfix}"
+  name                = "${var.product_key}-${var.environment_key}-web-lb-${local.location_key}${var.name_postfix}"
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
   sku                 = "Standard"
@@ -81,13 +81,13 @@ resource "azurerm_network_interface_backend_address_pool_association" "swarm_nic
   backend_address_pool_id = azurerm_lb_backend_address_pool.swarm_lb_backend_address_pool.id
 }
 resource "azurerm_network_interface_backend_address_pool_association" "swarm_nic_lb_associate_managers" {
-  count                   = local.node_manager_count - 1
+  count                   = var.node_manager_count - 1
   network_interface_id    = azurerm_network_interface.nic_managers[count.index].id
   ip_configuration_name   = azurerm_network_interface.nic_managers[count.index].ip_configuration[0].name
   backend_address_pool_id = azurerm_lb_backend_address_pool.swarm_lb_backend_address_pool.id
 }
 resource "azurerm_network_interface_backend_address_pool_association" "swarm_nic_lb_associate_workers" {
-  count                   = local.node_worker_count
+  count                   = var.node_worker_count
   network_interface_id    = azurerm_network_interface.nic_workers[count.index].id
   ip_configuration_name   = azurerm_network_interface.nic_workers[count.index].ip_configuration[0].name
   backend_address_pool_id = azurerm_lb_backend_address_pool.swarm_lb_backend_address_pool.id
@@ -95,7 +95,7 @@ resource "azurerm_network_interface_backend_address_pool_association" "swarm_nic
 
 # Azure LB Inbound NAT Rule
 resource "azurerm_lb_nat_rule" "lb_inbound_nat_rule_worker_22" {
-  count                          = local.node_worker_count
+  count                          = var.node_worker_count
   name                           = "ssh-500${count.index}-vm-22"
   protocol                       = "Tcp"
   frontend_port                  = 5000 + count.index
@@ -107,7 +107,7 @@ resource "azurerm_lb_nat_rule" "lb_inbound_nat_rule_worker_22" {
 
 # Associate LB NAT Rule and VM Network Interface
 resource "azurerm_network_interface_nat_rule_association" "nic_nat_rule_associate" {
-  count                 = local.node_worker_count
+  count                 = var.node_worker_count
   network_interface_id  = azurerm_network_interface.nic_workers[count.index].id
   ip_configuration_name = azurerm_network_interface.nic_workers[count.index].ip_configuration[0].name
   nat_rule_id           = azurerm_lb_nat_rule.lb_inbound_nat_rule_worker_22[count.index].id

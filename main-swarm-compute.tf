@@ -7,18 +7,18 @@
 
 
 resource "azurerm_public_ip" "publicip_manager0" {
-  name                = "${local.product_key}-${local.environment_key}-publicip-manager0-${local.location_key}${var.name_postfix}"
+  name                = "${var.product_key}-${var.environment_key}-publicip-manager0-${local.location_key}${var.name_postfix}"
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
   sku                 = "Standard"
   allocation_method   = "Static"
-  domain_name_label   = "${local.product_key}-${local.environment_key}-manager0-${local.location_key}${var.name_postfix}"
+  domain_name_label   = "${var.product_key}-${var.environment_key}-manager0-${local.location_key}${var.name_postfix}"
   tags                = local.tags
 
 }
 
 resource "azurerm_network_interface" "nic_manager0" {
-  name                          = "${local.product_key}-${local.environment_key}-nic-manager0-${local.location_key}${var.name_postfix}"
+  name                          = "${var.product_key}-${var.environment_key}-nic-manager0-${local.location_key}${var.name_postfix}"
   resource_group_name           = azurerm_resource_group.swarm_cluster.name
   location                      = azurerm_resource_group.swarm_cluster.location
   enable_accelerated_networking = true
@@ -41,12 +41,12 @@ resource "azurerm_network_interface_security_group_association" "nic_manager0_sg
 
 
 resource "azurerm_linux_virtual_machine" "manager0" {
-  name                       = "${local.product_key}-${local.environment_key}-vm-manager0-${local.location_key}${var.name_postfix}"
+  name                       = "${var.product_key}-${var.environment_key}-vm-manager0-${local.location_key}${var.name_postfix}"
   computer_name              = "manager0"
   resource_group_name        = azurerm_resource_group.swarm_cluster.name
   location                   = azurerm_resource_group.swarm_cluster.location
-  size                       = local.node_manager_size
-  admin_username             = local.vm_admin_username
+  size                       = var.node_manager_size
+  admin_username             = var.vm_admin_username
   network_interface_ids      = [azurerm_network_interface.nic_manager0.id]
   availability_set_id        = azurerm_availability_set.vm_availabilityset_manager.id
   encryption_at_host_enabled = true
@@ -61,12 +61,12 @@ resource "azurerm_linux_virtual_machine" "manager0" {
   tags = local.tags
 
   admin_ssh_key {
-    username   = local.vm_admin_username
+    username   = var.vm_admin_username
     public_key = file(var.ssh_private_key_local_path)
   }
 
   os_disk {
-    #name                 = "${local.product_key}-${local.environment_key}-osdisk-manager0-${local.location_key}${var.name_postfix}"
+    #name                 = "${var.product_key}-${var.environment_key}-osdisk-manager0-${local.location_key}${var.name_postfix}"
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
     disk_size_gb         = 30
@@ -164,19 +164,19 @@ resource "azurerm_virtual_machine_extension" "vm_azure_monitor_agent_linux_manag
 # ------------------------------------------------------------------
 
 resource "azurerm_public_ip" "publicip_managers" {
-  count               = local.node_manager_count - 1
-  name                = "${local.product_key}-${local.environment_key}-publicip-manager${count.index + 1}-${local.location_key}${var.name_postfix}"
+  count               = var.node_manager_count - 1
+  name                = "${var.product_key}-${var.environment_key}-publicip-manager${count.index + 1}-${local.location_key}${var.name_postfix}"
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
   sku                 = "Standard"
   allocation_method   = "Static"
-  domain_name_label   = "${local.product_key}-${local.environment_key}-manager${count.index + 1}-${local.location_key}${var.name_postfix}"
+  domain_name_label   = "${var.product_key}-${var.environment_key}-manager${count.index + 1}-${local.location_key}${var.name_postfix}"
   tags                = local.tags
 }
 
 resource "azurerm_network_interface" "nic_managers" {
-  count                         = local.node_manager_count - 1
-  name                          = "${local.product_key}-${local.environment_key}-nic-manager${count.index + 1}-${local.location_key}${var.name_postfix}"
+  count                         = var.node_manager_count - 1
+  name                          = "${var.product_key}-${var.environment_key}-nic-manager${count.index + 1}-${local.location_key}${var.name_postfix}"
   resource_group_name           = azurerm_resource_group.swarm_cluster.name
   location                      = azurerm_resource_group.swarm_cluster.location
   enable_accelerated_networking = true
@@ -193,19 +193,19 @@ resource "azurerm_network_interface" "nic_managers" {
 }
 
 resource "azurerm_network_interface_security_group_association" "nic_managers_sg" {
-  count                     = local.node_manager_count - 1
+  count                     = var.node_manager_count - 1
   network_interface_id      = azurerm_network_interface.nic_managers[count.index].id
   network_security_group_id = azurerm_network_security_group.manager_sg.id
 }
 
 resource "azurerm_linux_virtual_machine" "managers" {
-  count                      = local.node_manager_count - 1
-  name                       = "${local.product_key}-${local.environment_key}-vm-manager${count.index + 1}-${local.location_key}${var.name_postfix}"
+  count                      = var.node_manager_count - 1
+  name                       = "${var.product_key}-${var.environment_key}-vm-manager${count.index + 1}-${local.location_key}${var.name_postfix}"
   computer_name              = "manager${count.index + 1}"
   resource_group_name        = azurerm_resource_group.swarm_cluster.name
   location                   = azurerm_resource_group.swarm_cluster.location
-  size                       = local.node_manager_size
-  admin_username             = local.vm_admin_username
+  size                       = var.node_manager_size
+  admin_username             = var.vm_admin_username
   network_interface_ids      = [azurerm_network_interface.nic_managers[count.index].id]
   availability_set_id        = azurerm_availability_set.vm_availabilityset_manager.id
   encryption_at_host_enabled = true
@@ -220,12 +220,12 @@ resource "azurerm_linux_virtual_machine" "managers" {
   tags = local.tags
 
   admin_ssh_key {
-    username   = local.vm_admin_username
+    username   = var.vm_admin_username
     public_key = file(var.ssh_private_key_local_path)
   }
 
   os_disk {
-    #name                 = "${local.product_key}-${local.environment_key}-osdisk-manager1-${local.location_key}${var.name_postfix}"
+    #name                 = "${var.product_key}-${var.environment_key}-osdisk-manager1-${local.location_key}${var.name_postfix}"
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
     disk_size_gb         = 30
@@ -253,7 +253,7 @@ resource "azurerm_linux_virtual_machine" "managers" {
 }
 
 resource "azurerm_managed_disk" "managers_data" {
-  count                = local.node_manager_count - 1
+  count                = var.node_manager_count - 1
   name                 = "manager${count.index + 1}1-data"
   location             = azurerm_resource_group.swarm_cluster.location
   resource_group_name  = azurerm_resource_group.swarm_cluster.name
@@ -265,7 +265,7 @@ resource "azurerm_managed_disk" "managers_data" {
 }
 
 resource "azurerm_virtual_machine_data_disk_attachment" "manager1_data_attachment" {
-  count              = local.node_manager_count - 1
+  count              = var.node_manager_count - 1
   managed_disk_id    = azurerm_managed_disk.managers_data[count.index].id
   virtual_machine_id = azurerm_linux_virtual_machine.managers[count.index].id
   lun                = "0"
@@ -273,7 +273,7 @@ resource "azurerm_virtual_machine_data_disk_attachment" "manager1_data_attachmen
 }
 
 # resource "azurerm_virtual_machine_extension" "vm_config_linux_managers" {
-#   count                      = local.node_manager_count - 1
+#   count                      = var.node_manager_count - 1
 #   name                       = "ConfigurationforLinux"
 #   virtual_machine_id         = azurerm_linux_virtual_machine.managers[count.index].id
 #   publisher                  = "Microsoft.GuestConfiguration"
@@ -288,7 +288,7 @@ resource "azurerm_virtual_machine_data_disk_attachment" "manager1_data_attachmen
 # }
 
 # resource "azurerm_virtual_machine_extension" "vm_dep_agent_linux_managers" {
-#   count                      = local.node_manager_count - 1
+#   count                      = var.node_manager_count - 1
 #   name                       = "DependencyAgentLinux"
 #   virtual_machine_id         = azurerm_linux_virtual_machine.managers[count.index].id
 #   publisher                  = "Microsoft.Azure.Monitoring.DependencyAgent"
@@ -303,7 +303,7 @@ resource "azurerm_virtual_machine_data_disk_attachment" "manager1_data_attachmen
 # }
 
 resource "azurerm_virtual_machine_extension" "vm_azure_monitor_agent_linux_managers" {
-  count = local.node_manager_count - 1
+  count = var.node_manager_count - 1
   # https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-manage?tabs=azure-portal#virtual-machine-extension-details
   name               = "AzureMonitorLinuxAgent"
   virtual_machine_id = azurerm_linux_virtual_machine.managers[count.index].id
@@ -325,18 +325,18 @@ resource "azurerm_virtual_machine_extension" "vm_azure_monitor_agent_linux_manag
 
 
 resource "azurerm_public_ip" "publicip_workers" {
-  count               = local.node_worker_count
-  name                = "${local.product_key}-${local.environment_key}-publicip-worker${count.index}-${local.location_key}${var.name_postfix}"
+  count               = var.node_worker_count
+  name                = "${var.product_key}-${var.environment_key}-publicip-worker${count.index}-${local.location_key}${var.name_postfix}"
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
   sku                 = "Standard"
   allocation_method   = "Static"
-  domain_name_label   = "${local.product_key}-${local.environment_key}-worker${count.index}-${local.location_key}${var.name_postfix}"
+  domain_name_label   = "${var.product_key}-${var.environment_key}-worker${count.index}-${local.location_key}${var.name_postfix}"
   tags                = local.tags
 }
 resource "azurerm_network_interface" "nic_workers" {
-  count                         = local.node_worker_count
-  name                          = "${local.product_key}-${local.environment_key}-nic-worker${count.index}-${local.location_key}${var.name_postfix}"
+  count                         = var.node_worker_count
+  name                          = "${var.product_key}-${var.environment_key}-nic-worker${count.index}-${local.location_key}${var.name_postfix}"
   resource_group_name           = azurerm_resource_group.swarm_cluster.name
   location                      = azurerm_resource_group.swarm_cluster.location
   enable_accelerated_networking = true
@@ -359,19 +359,19 @@ resource "azurerm_network_interface" "nic_workers" {
 }
 
 resource "azurerm_network_interface_security_group_association" "nic_workers_sg" {
-  count                     = local.node_worker_count
+  count                     = var.node_worker_count
   network_interface_id      = azurerm_network_interface.nic_workers[count.index].id
   network_security_group_id = azurerm_network_security_group.worker_sg.id
 }
 
 resource "azurerm_linux_virtual_machine" "workers" {
-  count                      = local.node_worker_count
-  name                       = "${local.product_key}-${local.environment_key}-vm-worker${count.index}-${local.location_key}${var.name_postfix}"
+  count                      = var.node_worker_count
+  name                       = "${var.product_key}-${var.environment_key}-vm-worker${count.index}-${local.location_key}${var.name_postfix}"
   computer_name              = "worker${count.index}"
   resource_group_name        = azurerm_resource_group.swarm_cluster.name
   location                   = azurerm_resource_group.swarm_cluster.location
   size                       = local.node_worker_size
-  admin_username             = local.vm_admin_username
+  admin_username             = var.vm_admin_username
   network_interface_ids      = [azurerm_network_interface.nic_workers[count.index].id]
   availability_set_id        = azurerm_availability_set.vm_availabilityset_workers.id
   encryption_at_host_enabled = true
@@ -386,12 +386,12 @@ resource "azurerm_linux_virtual_machine" "workers" {
   tags = local.tags
 
   admin_ssh_key {
-    username   = local.vm_admin_username
+    username   = var.vm_admin_username
     public_key = file(var.ssh_private_key_local_path)
   }
 
   os_disk {
-    #name                 = "${local.product_key}-${local.environment_key}-osdisk-manager1-${local.location_key}${var.name_postfix}"
+    #name                 = "${var.product_key}-${var.environment_key}-osdisk-manager1-${local.location_key}${var.name_postfix}"
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
     disk_size_gb         = 30
@@ -419,7 +419,7 @@ resource "azurerm_linux_virtual_machine" "workers" {
 }
 
 resource "azurerm_managed_disk" "workers_data" {
-  count                = local.node_worker_count
+  count                = var.node_worker_count
   name                 = "worker${count.index}-data"
   location             = azurerm_resource_group.swarm_cluster.location
   resource_group_name  = azurerm_resource_group.swarm_cluster.name
@@ -431,7 +431,7 @@ resource "azurerm_managed_disk" "workers_data" {
 }
 
 resource "azurerm_virtual_machine_data_disk_attachment" "workers_data_attachment" {
-  count              = local.node_worker_count
+  count              = var.node_worker_count
   managed_disk_id    = azurerm_managed_disk.workers_data[count.index].id
   virtual_machine_id = azurerm_linux_virtual_machine.workers[count.index].id
   lun                = "0"
