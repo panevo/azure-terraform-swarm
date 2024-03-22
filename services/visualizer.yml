@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  visualizer:
+    image: dockersamples/visualizer
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      labels:
+        traefik.enable: "true"
+        traefik.http.routers.viz.rule: Host(`visualizer.iotorq-lean.com`)
+        traefik.http.routers.viz.entryPoints: web
+        traefik.http.services.viz.loadbalancer.server.port: 8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
