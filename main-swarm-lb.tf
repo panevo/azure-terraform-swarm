@@ -1,6 +1,6 @@
 # Resource-1: Create Public IP Address for Azure Load Balancer
 resource "azurerm_public_ip" "publicip_swarm_lb" {
-  name                = "${var.product_key}-${var.environment_key}-publicip-swarm-lb-${local.location_key}${var.name_postfix}"
+  name                = "${var.product_key}-${local.environment_key}-publicip-swarm-lb-${local.location_key}${var.name_postfix}"
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
   allocation_method   = "Static"
@@ -10,7 +10,7 @@ resource "azurerm_public_ip" "publicip_swarm_lb" {
 
 # Create Azure Standard Load Balancer
 resource "azurerm_lb" "swarm_lb" {
-  name                = "${var.product_key}-${var.environment_key}-web-lb-${local.location_key}${var.name_postfix}"
+  name                = "${var.product_key}-${local.environment_key}-web-lb-${local.location_key}${var.name_postfix}"
   resource_group_name = azurerm_resource_group.swarm_cluster.name
   location            = azurerm_resource_group.swarm_cluster.location
   sku                 = "Standard"
