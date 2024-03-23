@@ -57,6 +57,9 @@ cd terraform-azure-docker-swarm
 make keys
 ```
 
+This command will create a new folder called `keys` and generate a new SSH key pair in it. In addition, it will create a `terraform.tfvars` file with the public key path. You can customize this file
+further to modify the number of nodes in the cluster (review the list of options in `variables.tf`)
+
 3. Log in to Azure using the Azure CLI.
 
 ```bash
@@ -81,16 +84,18 @@ make plan
 make apply
 ```
 
-7. Once the deployment is complete, Terraform will output the public IP address of the first manager node and the join token for Docker Swarm. Use this information to access and manage your Docker Swarm cluster.
+7. Once the deployment is complete, Terraform will output the public IP address of the first manager node. Use this information to access and manage your Docker Swarm cluster.
 
 ## Accessing the Cluster
 
 To access the Docker Swarm cluster:
 
-1. SSH into the first manager node using the public IP address provided by Terraform.
+1. Visit the Azure Portal, find the manager0 node and whitelist your IP to the Network Security Group to allow SSH on port 22.
+
+2. SSH into the first manager node using the public IP address provided by Terraform.
 
 ```bash
-ssh username@public_ip_address
+ssh -i keys/vm_admin.pem vm_admin@<manager0 public IP>
 ```
 
 2. Once logged into the manager node, you can interact with Docker Swarm using Docker CLI commands.

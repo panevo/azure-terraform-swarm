@@ -370,7 +370,7 @@ resource "azurerm_linux_virtual_machine" "workers" {
   computer_name              = "worker${count.index}"
   resource_group_name        = azurerm_resource_group.swarm_cluster.name
   location                   = azurerm_resource_group.swarm_cluster.location
-  size                       = local.node_worker_size
+  size                       = var.node_worker_size
   admin_username             = var.vm_admin_username
   network_interface_ids      = [azurerm_network_interface.nic_workers[count.index].id]
   availability_set_id        = azurerm_availability_set.vm_availabilityset_workers.id

@@ -5,7 +5,8 @@ resource "random_id" "storage_id" {
 }
 
 resource "azurerm_storage_account" "cluster_storage" {
-  name                              = "${var.product_key}cluster${lower(random_id.storage_id.hex)}"
+  # Azure storage name must be between 3 and 24 characters long
+  name                              = substr("${var.product_key}cluster${lower(random_id.storage_id.hex)}", 0, 24)
   resource_group_name               = azurerm_resource_group.swarm_cluster.name
   location                          = azurerm_resource_group.swarm_cluster.location
   account_tier                      = "Standard"
@@ -27,12 +28,14 @@ resource "azurerm_storage_account" "cluster_storage" {
     }
   }
 
-  public_network_access_enabled = false
+  public_network_access_enabled = true
 
   network_rules {
-    default_action = "Deny"
-    virtual_network_subnet_ids = [
-      azurerm_subnet.node_subnet.id
+    default_action             = "Deny"
+    virtual_network_subnet_ids = [azurerm_subnet.node_subnet.id]
+    # whitelist our IP to allow Terraform to create the file shares
+    ip_rules = [
+      data.http.ip.response_body
     ]
   }
 
